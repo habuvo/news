@@ -13,6 +13,8 @@ services:
       dockerfile: news/cmd/news-api/Dockerfile
       ports:
         - "8080:8080"
+      environment:
+        API_BINDING: ":8080"
   news-storage:
     build:
       context: ..
