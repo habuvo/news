@@ -8,38 +8,42 @@ import (
 
 type NewsItem struct {
 	gorm.Model
-	TimeStamp               time.Time `json:"time_stamp" validate:"nonzero,time"`
-	Header 			string  `json:"header" validate:"nonzero" gorm:"unique"`
+	TimeStamp time.Time `json:"time_stamp" validate:"nonzero,time"`
+	Header    string    `json:"header" validate:"nonzero" gorm:"unique"`
 }
 
 type NewsDataStore struct {
-	conn *gorm.DB
+	Conn *gorm.DB
+}
+
+func (d *NewsDataStore) GetByObject(n *NewsItem) error {
+	return d.Conn.First(n).Error
 }
 
 func (d *NewsDataStore) GetAll() (ni *[]NewsItem, err error) {
-	err = d.conn.Find(ni).Error
+	err = d.Conn.Find(ni).Error
 	return
 }
 
-func (d *NewsDataStore) GetByHeader(h string) (ni *NewsItem,err error) {
-	err = d.conn.Where("lower(header) = ?",strings.ToLower(h)).First(ni).Error
+func (d *NewsDataStore) GetByHeader(h string) (ni *NewsItem, err error) {
+	err = d.Conn.Where("lower(header) = ?", strings.ToLower(h)).First(ni).Error
 	return
 }
 
-func (d *NewsDataStore) GetById(i int) (ni *NewsItem,err error) {
-	err = d.conn.Where("id = ?",i).First(ni).Error
+func (d *NewsDataStore) GetById(i int) (ni *NewsItem, err error) {
+	err = d.Conn.Where("id = ?", i).First(ni).Error
 	return
 }
 
-func (d *NewsDataStore) GetByTime(begin time.Time,end time.Time) (ni *[]NewsItem,err error) {
-	err = d.conn.Where("time_stamp > ? and time_stamp < ?",begin,end).Find(ni).Error
+func (d *NewsDataStore) GetByTime(begin time.Time, end time.Time) (ni *[]NewsItem, err error) {
+	err = d.Conn.Where("time_stamp > ? and time_stamp < ?", begin, end).Find(ni).Error
 	return
 }
 
 func (d *NewsDataStore) AddNews(ni *NewsItem) error {
-	return d.conn.Create(ni).Error
+	return d.Conn.Create(ni).Error
 }
 
 func (d *NewsDataStore) ChangeNews(ni *NewsItem) error {
-	return d.conn.Update(ni).Error
+	return d.Conn.Update(ni).Error
 }
