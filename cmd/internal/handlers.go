@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
+	"github.com/habuvo/news/storage"
 	"github.com/nats-io/go-nats"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -72,5 +74,63 @@ func GetNews(c *gin.Context) {
 			}
 		default:
 		}
+	}
+}
+
+func Worker(cfg *Config, m *nats.Msg) {
+	//process message and pub response
+	message := &NewsReq{}
+	err := proto.Unmarshal(m.Data, message)
+	if err != nil {
+		log.Printf("unmarshall request message error %v", err)
+		return
+	}
+
+	item := message.GetItem()
+	//maybe check if time is set
+	timestamp, err := time.Parse(time.Stamp, item.TimeStamp)
+	if err != nil {
+		log.Printf("parse timestamp error %v", err)
+		return
+	}
+
+	switch {
+	case message.Action == NewsReq_GET:
+		n := storage.NewsItem{
+			TimeStamp: timestamp,
+			Header:    item.Header,
+		}
+		n.ID = uint(item.Id)
+
+		err = cfg.NewsStorage.GetByObject(&n)
+		resp := NewsRes{
+			Success: err == nil,
+			Error:   err.Error(),
+			JobId:   message.JobId,
+		}
+		if err != nil {
+			resp.Item = append(resp.Item, &NewsItem{
+				TimeStamp: n.TimeStamp.Format(time.Stamp),
+				Header:    n.Header,
+				Id:        int64(n.ID),
+			})
+		}
+		data, err := proto.Marshal(&resp)
+		if err != nil {
+			log.Printf("marshall response error %v", err)
+			return
+		}
+		err = cfg.NC.Publish("news-res", data)
+		if err != nil {
+			log.Printf("marshall response error %v", err)
+		}
+		return
+	case message.Action == NewsReq_POST:
+		//same like GET
+	case message.Action == NewsReq_PUT:
+		//same like GET
+	default:
+		log.Printf("wrong action type %v", message.Action)
+		return
 	}
 }

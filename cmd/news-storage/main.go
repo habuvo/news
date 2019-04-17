@@ -43,9 +43,7 @@ func main() {
 			}
 			os.Exit(0)
 		case msg := <-req:
-			go func(m *nats.Msg) {
-				//process message and pub response
-			}(msg)
+			go internal.Worker(cfg, msg)
 		}
 	}
 }
