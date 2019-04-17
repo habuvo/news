@@ -1,0 +1,29 @@
+version: '3'
+services:
+  db:
+    image: "postgres"
+    restart: always
+      environment:
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: password
+        POSTGRES_DB: news
+  news-api:
+    build:
+      context: ..
+      dockerfile: news/cmd/news-api/Dockerfile
+      ports:
+        - "8080:8080"
+  news-storage:
+    build:
+      context: ..
+      dockerfile: news/cmd/news-storage/Dockerfile
+      environment:
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: password
+        POSTGRES_DB: news
+  gnatsd:
+    image: "nats:latest"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "6222:6222"
