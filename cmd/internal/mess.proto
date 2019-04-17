@@ -1,0 +1,27 @@
+syntax = "proto3";
+package internal;
+
+message NewsReq {
+    enum Action {
+        GET = 0;
+        PUT = 1;
+        POST = 2;
+    }
+    Action action = 2;
+    NewsItem item = 4;
+    int64 job_id = 6;
+}
+
+message NewsRes {
+    bool success = 10;
+    string error = 12;
+    repeated NewsItem item = 14;
+    int64 job_id = 16;
+}
+
+
+message NewsItem {
+    string time_stamp = 2;
+    string header = 4;
+    int64 id = 6;
+}
