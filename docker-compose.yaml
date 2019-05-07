@@ -3,26 +3,26 @@ services:
   db:
     image: "postgres"
     restart: always
-      environment:
-        POSTGRES_USER: user
-        POSTGRES_PASSWORD: password
-        POSTGRES_DB: news
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: news
   news-api:
+    ports:
+      - "8080:8080"
+    environment:
+      API_BINDING: ":8080"
     build:
-      context: ..
-      dockerfile: news/cmd/news-api/Dockerfile
-      ports:
-        - "8080:8080"
-      environment:
-        API_BINDING: ":8080"
+      context: .
+      dockerfile: Dockerfile.news-api
   news-storage:
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: news
     build:
-      context: ..
-      dockerfile: news/cmd/news-storage/Dockerfile
-      environment:
-        POSTGRES_USER: user
-        POSTGRES_PASSWORD: password
-        POSTGRES_DB: news
+      context: .
+      dockerfile: Dockerfile.news-storage
   gnatsd:
     image: "nats:latest"
     ports:

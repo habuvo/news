@@ -1,6 +1,4 @@
-FROM golang as builder
-
-ENV GO111MODULE=on
+FROM golang:latest as builder
 
 WORKDIR /app
 
@@ -11,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+RUN go build -o news-api cmd/news-api/main.go
 
 FROM scratch
 COPY --from=builder /app/news-api /app/
