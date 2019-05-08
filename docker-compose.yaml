@@ -12,17 +12,26 @@ services:
       - "8080:8080"
     environment:
       API_BINDING: ":8080"
-    build:
-      context: .
-      dockerfile: Dockerfile.news-api
-  news-storage:
-    environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: news
     build:
       context: .
+      dockerfile: Dockerfile.news-api
+    depends_on:
+      - gnatsd
+  news-storage:
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: news
+      WAIT_HOSTS: gnatsd:4222
+    build:
+      context: .
       dockerfile: Dockerfile.news-storage
+    depends_on:
+      - gnatsd
+      - db
   gnatsd:
     image: "nats:latest"
     ports:

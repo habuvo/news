@@ -9,8 +9,8 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o news-storage cmd/news-storage/main.go
+RUN CGO_ENABLED=0 go build -o news-storage cmd/news-storage/main.go
 
 FROM scratch
-COPY --from=builder /app/news-storage /app/
-ENTRYPOINT ["/app/news-storage"]
+COPY --from=builder /app/news-storage .
+CMD ["./news-storage"]
